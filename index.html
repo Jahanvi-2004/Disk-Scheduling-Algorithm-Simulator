@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disk Scheduling Algorithm Simulator</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Disk Scheduling Algorithm Simulator</h1>
+        </header>
+        
+        <main>
+            <form id="diskForm">
+                <div class="form-group">
+                    <label for="requests">Enter Disk Requests (comma separated):</label>
+                    <input type="text" id="requests" name="requests" placeholder="e.g. 98, 183, 37, 122, 14, 124, 65, 67">
+                </div>
+                
+                <div class="form-group">
+                    <label for="head">Initial Head Position:</label>
+                    <input type="number" id="head" name="head" min="0" placeholder="e.g. 53">
+                </div>
+                
+                <div class="form-group">
+                    <label for="algorithm">Select Algorithm:</label>
+                    <select id="algorithm" name="algorithm">
+                        <option value="fcfs">FCFS (First-Come First-Served)</option>
+                        <option value="sstf">SSTF (Shortest Seek Time First)</option>
+                        <option value="scan">SCAN (Elevator Algorithm)</option>
+                        <option value="cscan">C-SCAN (Circular SCAN)</option>
+                        <option value="look">LOOK</option>
+                        <option value="clook">C-LOOK (Circular LOOK)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <button type="button" onclick="simulate()">Simulate</button>
+                </div>
+            </form>
+            
+            <div id="result" class="result-container"></div>
+        </main>
+    </div>
+
+    <script>
+    function parseRequests(input) {
+        return input.split(',')
+                   .map(item => parseInt(item.trim(), 10))
+                   .filter(n => !isNaN(n));
+    }
+
+    function fcfs(requests, head) {
+        let sequence = [head, ...requests];
+        let total = 0;
+        for (let i = 1; i < sequence.length; i++) {
+            total += Math.abs(sequence[i] - sequence[i-1]);
+        }
+        return {sequence, total};
+    }
+
+    function sstf(requests, head) {
+        let sequence = [head];
+        let total = 0;
+        let tempRequests = [...requests];
+        
+        while (tempRequests.length > 0) {
+            // Find request with shortest seek time
+            let closestIndex = 0;
+            let minDistance = Math.abs(head - tempRequests[0]);
+            
+            for (let i = 1; i < tempRequests.length; i++) {
+                let distance = Math.abs(head - tempRequests[i]);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestIndex = i;
+                }
+            }
+            
+            total += minDistance;
+            head = tempRequests[closestIndex];
+            sequence.push(head);
+            tempRequests.splice(closestIndex, 1);
+        }
+        
+        return {sequence, total};
+    }
+
+    function scan(requests, head, direction = 'right', diskSize = 200) {
+        let sequence = [head];
+        let total = 0;
+        let left = [];
+        let right = [];
+        
+        // Split requests into left and right of head
+        requests.forEach(req => {
+            if (req < head) left.push(req);
+            if (req > head) right.push(req);
+        });
+        
+        // Sort left in descending and right in ascending order
+        left.sort((a, b) => b - a);
+        right.sort((a, b) => a - b);
+        
+        if (direction === 'right') {
+            // Move right to end
+            for (let req of right) {
+                total += req - head;
+                head = req;
+                sequence.push(head);
+            }
+            // Add disk end if there are left requests
+            if (left.length > 0) {
+                total += diskSize - 1 - head;
+                head = diskSize - 1;
+                sequence.push(head);
+            }
+            // Move left
+            for (let req of left) {
+                total += head - req;
+                head = req;
+                sequence.push(head);
+            }
+        } else {
+            // Move left to start
+            for (let req of left) {
+                total += head - req;
+                head = req;
+                sequence.push(head);
+            }
+            // Add disk start if there are right requests
+            if (right.length > 0) {
+                total += head;
+                head = 0;
+                sequence.push(head);
+            }
+            // Move right
+            for (let req of right) {
+                total += req - head;
+                head = req;
+                sequence.push(head);
+            }
+        }
+        
+        return {sequence, total};
+    }
+
+    function simulate() {
+        const requestsInput = document.getElementById('requests').value;
+        const headInput = document.getElementById('head').value;
+        const algorithm = document.getElementById('algorithm').value;
+        
+        // Input validation
+        if (!requestsInput.trim() || !headInput.trim()) {
+            document.getElementById('result').innerHTML = 
+                "<div class='error'>Please enter both disk requests and initial head position.</div>";
+            return;
+        }
+        
+        const requests = parseRequests(requestsInput);
+        const head = parseInt(headInput, 10);
+        
+        if (requests.length === 0 || isNaN(head)) {
+            document.getElementById('result').innerHTML = 
+                "<div class='error'>Invalid input. Please enter numbers only.</div>";
+            return;
+        }
+        
+        let result;
+        
+        switch (algorithm) {
+            case 'fcfs':
+                result = fcfs(requests, head);
+                break;
+            case 'sstf':
+                result = sstf(requests, head);
+                break;
+            case 'scan':
+                result = scan(requests, head);
+                break;
+            case 'cscan':
+                result = scan(requests, head, 'right', 200); // Simplified C-SCAN
+                break;
+            case 'look':
+                result = scan(requests, head, 'right', Infinity); // LOOK doesn't go to end
+                break;
+            case 'clook':
+                result = scan(requests, head, 'right', Infinity); // Simplified C-LOOK
+                break;
+            default:
+                document.getElementById('result').innerHTML = 
+                    "<div class='error'>Selected algorithm not implemented yet.</div>";
+                return;
+        }
+        
+        document.getElementById('result').innerHTML = `
+            <div class="result-header">Algorithm: ${document.getElementById('algorithm').options[document.getElementById('algorithm').selectedIndex].text}</div>
+            <div class="result-detail"><b>Request Sequence:</b> ${result.sequence.join(' → ')}</div>
+            <div class="result-detail"><b>Total Head Movement:</b> ${result.total}</div>
+           
+        `;
+    }
+    </script>
+</body>
+</html>

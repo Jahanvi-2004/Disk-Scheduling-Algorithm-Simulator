@@ -1,0 +1,111 @@
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(120deg, #F5EEDD 0%, #7AE2CF 100%);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    color: #06202B;
+}
+
+h1 {
+    text-align: center;
+    color: #077A7D;
+    margin-top: 40px;
+    margin-bottom: 30px;
+    letter-spacing: 1px;
+}
+
+/* Form Styles */
+form#diskForm {
+    background: #F5EEDD;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 32px 28px 24px 28px;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(6, 32, 43, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid rgba(7, 122, 125, 0.2);
+}
+
+label {
+    font-weight: 500;
+    color: #06202B;
+    margin-bottom: 4px;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #077A7D;
+    border-radius: 6px;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    transition: border-color 0.2s;
+    color: #06202B;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    border-color: #06202B;
+    outline: none;
+    background: white;
+}
+
+button[type="button"] {
+    background: linear-gradient(90deg, #077A7D 0%, #06202B 100%);
+    color: #F5EEDD;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 0;
+    font-size: 1.08rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s, transform 0.3s;
+}
+
+button[type="button"]:hover {
+    background: linear-gradient(90deg, #06202B 0%, #077A7D 100%);
+    transform: translateY(-2px);
+}
+
+/* Result Styles */
+#result {
+    max-width: 420px;
+    margin: 28px auto 0 auto;
+    background: #F5EEDD;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(6, 32, 43, 0.1);
+    padding: 22px 20px;
+    font-size: 1.08rem;
+    color: #06202B;
+    min-height: 40px;
+    word-break: break-word;
+    border: 1px solid rgba(7, 122, 125, 0.2);
+}
+
+#result b {
+    color: #077A7D;
+}
+
+@media (max-width: 600px) {
+    form#diskForm, #result {
+        max-width: 90vw;
+        padding: 20px 15px;
+        margin: 0 auto;
+    }
+    h1 {
+        font-size: 1.5rem;
+        margin: 20px 15px;
+    }
+    body {
+        padding: 0 10px;
+    }
+}
